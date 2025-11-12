@@ -1,0 +1,89 @@
+Assunto: Regras Gerais Compartilhadas entre Backend e Frontend
+
+## 1. Padrões de Nomenclatura
+
+* **Arquivos:** snake_case para arquivos de configuração (ex: `.env.example`, `docker-compose.yml`), kebab-case para nomes de arquivos quando apropriado
+* **Variáveis de Ambiente:** UPPER_SNAKE_CASE (ex: `DB_HOST`, `API_URL`)
+* **Código:** Seguir convenções da linguagem (Go: camelCase para variáveis, PascalCase para exportados; JavaScript/TypeScript: camelCase para variáveis, PascalCase para componentes)
+* **Pastas:** kebab-case ou snake_case para pastas de configuração, seguir convenções do framework para pastas de código
+
+---
+
+## 2. Gerenciamento de Variáveis de Ambiente
+
+* **Arquivo `.env.example`:** Sempre criar com todas as variáveis necessárias e valores de exemplo
+* **Arquivo `.env`:** Não versionar no Git (deve estar no `.gitignore`)
+* **Docker Compose:** NUNCA incluir variáveis de ambiente diretamente no docker-compose.yml. Sempre usar `env_file: .env`
+* **Validação:** Validar variáveis de ambiente obrigatórias na inicialização da aplicação
+* **Documentação:** Documentar todas as variáveis no `.env.example` com comentários quando necessário
+
+---
+
+## 3. Versionamento Git
+
+* **Commits:** Mensagens claras e descritivas em português ou inglês (seguir padrão do projeto)
+* **Branches:** Usar nomes descritivos (ex: `feature/nome-feature`, `fix/nome-bug`)
+* **`.gitignore`:** Incluir sempre: `.env`, arquivos de build, dependências (`node_modules`, `vendor`), arquivos de IDE, logs, arquivos temporários
+
+---
+
+## 4. Estrutura de Projeto
+
+* **Organização:** Manter estrutura clara e consistente entre projetos similares
+* **Separação de Responsabilidades:** Separar código de aplicação, configuração, e infraestrutura
+* **Documentação Mínima:** Apenas documentação essencial (Swagger para backend, sem README extenso)
+
+---
+
+## 5. Qualidade de Código
+
+* **Simplicidade:** Código simples, objetivo e fácil de entender
+* **Performance:** Focar em performance desde o início (evitar N+1, usar cache quando apropriado, otimizar re-renders)
+* **Manutenibilidade:** Código fácil de manter e modificar
+* **Sem Comentários:** Código autoexplicativo através de nomes claros (não usar comentários inline)
+
+---
+
+## 6. Ambiente de Desenvolvimento
+
+* **Hot Reload:** Sempre habilitado para desenvolvimento
+* **Docker Compose:** Usar Docker Compose para orquestração de serviços
+* **Makefile:** Ponto de entrada principal para tarefas comuns
+* **Variáveis de Ambiente:** Centralizadas em `.env` e `.env.example`
+
+---
+
+## 7. Segurança Básica
+
+* **Secrets:** Nunca commitar secrets no código ou no Git
+* **Variáveis Sensíveis:** Usar variáveis de ambiente para dados sensíveis
+* **Validação:** Validar e sanitizar todas as entradas
+* **Dependências:** Manter dependências atualizadas
+
+---
+
+## 8. Restrições Gerais
+
+* **NÃO CRIAR TESTES:** Nenhum arquivo de teste deve ser incluído
+* **NÃO CRIAR DOCUMENTAÇÃO EXTENSA:** Apenas documentação essencial (Swagger para backend)
+* **NÃO CRIAR COMENTÁRIOS NO CÓDIGO:** Código deve ser autoexplicativo
+* **NÃO CRIAR CI/CD:** Não incluir configurações de CI/CD
+* **NÃO CRIAR CONFIGURAÇÕES DE PRODUÇÃO:** Ambiente 100% de desenvolvimento
+* **NÃO INCLUIR ENV NO DOCKER-COMPOSE:** Todas as variáveis em `.env` e `.env.example`
+
+---
+
+## 9. Padrões de Logging
+
+* **Estruturado:** Usar logging estruturado quando disponível (zap para Go, console estruturado para JavaScript)
+* **Níveis:** Usar níveis apropriados (DEBUG, INFO, WARN, ERROR)
+* **Contexto:** Incluir contexto relevante nos logs (request ID, user ID quando aplicável)
+
+---
+
+## 10. Tratamento de Erros
+
+* **Centralizado:** Tratamento de erros centralizado quando possível
+* **Mensagens:** Mensagens de erro claras e úteis para desenvolvimento
+* **Códigos HTTP:** Usar códigos HTTP apropriados e consistentes
+* **Error Wrapping:** Usar error wrapping quando disponível (Go: fmt.Errorf, errors.Is/As)

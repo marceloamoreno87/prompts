@@ -1,0 +1,134 @@
+Assunto: Geração Completa de Setup de Backend
+
+## 1. Visão Geral do Projeto
+* **Nome do Projeto:** [Nome do seu projeto]
+* **Objetivo Principal:** [Descreva em uma frase o que o backend fará]
+
+---
+
+## 2. Stack de Tecnologia (Versões Específicas)
+* **Linguagem:** Go 1.25+ (versão mínima obrigatória)
+* **Framework Principal:** Gin
+* **Banco de Dados (Principal):** PostgreSQL 16
+* **Banco de Dados (Cache/Auxiliar):** Redis 7
+* **Driver de Banco:** pgx (driver PostgreSQL nativo de alta performance)
+* **Nota sobre ORM:** Não usar GORM. Usar pgx diretamente para máxima performance.
+* **Gerenciador de Dependências:** Go Modules (go.mod)
+* **Ferramenta de Migrations:** go-migrate (golang-migrate/migrate)
+* **Documentação de API:** Swagger 2.0/OpenAPI 3.0 via swaggo/swag
+* **Hot Reload:** air (github.com/air-verse/air) para desenvolvimento com hot-reload automático
+  * Instalação: `go install github.com/air-verse/air@latest` (requer Go 1.25+)
+  * Configuração: Arquivo `.air.toml` na raiz do projeto (gerado com `air init`)
+  * Uso: Executar `air` ou `air -c .air.toml` para iniciar hot-reload
+
+---
+
+## 3. Arquitetura e Padrões
+* **Design de Código (Arquitetura):** Clean Architecture
+* **Princípios de Qualidade:** O código deve ser simples, objetivo, **focado em performance** (evitar N+1 queries, usar connection pooling adequado, prepared statements, algoritmos eficientes, cache quando apropriado, evitar alocações desnecessárias), seguir a Responsabilidade Única (SRP) e ser focado em fácil manutenção
+* **Estilo da API:** RESTful
+* **Autenticação:** JWT (com access/refresh tokens)
+* **Validação de Dados:** go-playground/validator
+* **Tratamento de Erros:** Middleware centralizado de erros, códigos HTTP padronizados, mensagens de erro estruturadas, error wrapping com fmt.Errorf e errors.Is/As
+* **Logging:** zap (uber-go/zap) com níveis de log (DEBUG/INFO/WARN/ERROR)
+* **Rate Limiting:** Implementar middleware de rate limiting usando biblioteca apropriada (ex: golang.org/x/time/rate)
+* **Retry e Circuit Breaker:** Implementar padrões de retry e circuit breaker para chamadas externas quando apropriado
+* **Principais Entidades/Recursos:** [Liste os principais "assuntos" da API]
+
+---
+
+## 4. Ambiente e Ferramentas (Qualidade de Código)
+* **Containerização:** Sim (Docker)
+* **Ambiente de Desenvolvimento:** Docker Compose
+* **Estilo de Código (Linter/Formatter):** golangci-lint + gofmt (formatação automática)
+* **Orquestrador de Tarefas:** Makefile
+* **Versionamento:** Git (com `.gitignore` apropriado para Go)
+
+---
+
+## 5. Entregáveis Solicitados (O que você deve criar)
+Por favor, gere os seguintes artefatos para este projeto:
+
+1.  **Makefile:** Um `Makefile` na raiz do projeto para automatizar tarefas comuns. Deve ser o ponto de entrada principal para o dev e incluir alvos (targets) como:
+    * `make up`: Sobe os containers do Docker Compose
+    * `make down`: Desliga os containers (opcional: `make down-v` para remover volumes)
+    * `make build`: Constrói as imagens Docker
+    * `make logs`: Mostra os logs dos containers (opcional: `make logs-f` para seguir logs)
+    * `make migrate`: Roda as migrações do banco de dados usando go-migrate
+    * `make migrate-down`: Reverte a última migração usando go-migrate
+    * `make seed`: Roda os seeds do banco de dados
+    * `make lint`: Roda o golangci-lint
+    * `make format`: Formata o código automaticamente usando gofmt
+    * `make docs`: Gera/atualiza os arquivos do Swagger (`swag init`)
+    * `make run`: Executa a aplicação localmente (sem Docker)
+    * `make build-binary`: Compila o binário da aplicação
+    * `make clean`: Limpa arquivos temporários e builds locais
+2.  **Estrutura de Pastas:** Um diagrama em árvore (tree structure) da organização do projeto, seguindo o padrão de arquitetura definido.
+3.  **Dockerfile:** Um `Dockerfile` para ambiente de desenvolvimento que:
+    * Use imagem base Go 1.25+
+    * Instale air para hot-reload
+    * Configure working directory apropriado
+    * Monte volumes para código fonte
+    * Configure hot-reload com air
+    * **Nota:** Este Dockerfile é apenas para desenvolvimento, não para produção
+4.  **docker-compose.yml:** Um arquivo `docker-compose.yml` para o ambiente de desenvolvimento, que será orquestrado pelo `Makefile`. Deve incluir os serviços:
+    * `app`: O serviço principal do backend Go com hot-reload usando air, volume montado para código fonte, env_file apontando para `.env`, e porta exposta para acesso local
+    * `db`: O serviço PostgreSQL com volume persistente para dados, env_file apontando para `.env` para configuração inicial, e porta exposta para acesso local
+    * `cache`: O serviço Redis com volume persistente, env_file apontando para `.env`, e porta exposta para acesso local
+    * **IMPORTANTE:** NÃO incluir variáveis de ambiente diretamente no docker-compose.yml. Todas as variáveis devem estar no arquivo `.env` e referenciadas via `env_file: .env`
+    * **Nota:** Configure networks apropriadas e health checks quando disponível
+5.  **Arquivos de Configuração Iniciais:**
+    * **`.env.example`**: Arquivo de exemplo com todas as variáveis de ambiente necessárias, incluindo:
+      - Configurações do banco de dados (DB_HOST, DB_USER, DB_PASS, DB_NAME, DB_PORT)
+      - Configurações de autenticação (JWT_SECRET, JWT_EXPIRATION, REFRESH_TOKEN_EXPIRATION)
+      - Configurações do servidor (PORT, HOST, ENV=development)
+      - Configurações de cache (REDIS_HOST, REDIS_PORT, REDIS_PASSWORD)
+    * **Arquivo de configuração do linter**: `.golangci.yml` com configurações apropriadas para o projeto
+    * **Arquivo de gerenciamento de dependências**: `go.mod` inicializado com versão mínima do Go 1.25
+    * **Arquivo de configuração do air**: `.air.toml` configurado para hot-reload com watch de arquivos Go, exclusão de diretórios desnecessários, e configuração de build
+    * **`.gitignore`**: Arquivo apropriado para Go, incluindo arquivos de build (`bin/`, executáveis), `.env`, arquivos de IDE, logs e arquivos temporários
+6.  **Banco de Dados (Estrutura Inicial):**
+    * **Migrations**: Uma pasta de `/db/migrations` contendo:
+      - O primeiro arquivo de migração com nomenclatura do go-migrate: `001_create_users_table.up.sql` e `001_create_users_table.down.sql`
+      - Exemplo de migração para criar uma tabela básica (`users` com campos: id, email, password_hash, created_at, updated_at)
+      - Arquivo de rollback correspondente (`.down.sql`)
+    * **Seeds**: Um arquivo `/db/seeds.go` para popular o banco com dados de exemplo:
+      - Dados mínimos para desenvolvimento/teste
+      - Usuários de exemplo (se aplicável)
+      - Função de seed que possa ser chamada via Makefile
+7.  **Código "Hello World" (Ponto de Partida):**
+    * **Arquivo de ponto de entrada (`main.go`)**: Que:
+      - Inicialize o servidor web Gin
+      - Carregue configurações do ambiente (.env usando godotenv)
+      - Configure conexão com banco de dados usando pgx
+      - Configure connection pool apropriado para performance
+      - Configure middleware básico (logging estruturado com zap, CORS, recovery/error handling)
+      - Inicialize rotas
+      - Implemente graceful shutdown
+    * **Módulo de Health Check**: Um endpoint `GET /health` que retorne:
+      - Status da aplicação: `{"status": "ok"}`
+      - Status do banco de dados e cache: `{"status": "ok", "database": "connected", "cache": "connected"}`
+      - Verificação real de conexão com banco de dados (ping)
+    * **Módulo de configuração (`internal/config`)**: Exemplo de como carregar e validar variáveis de ambiente do `.env` usando structs tipadas
+    * **Estrutura básica de rotas**: Organização inicial seguindo Clean Architecture
+    * **Conexão com banco**: Implementação usando pgx com connection pooling configurado adequadamente
+8.  **Documentação de API (Swagger):**
+    * **Configuração inicial**: Setup completo do swaggo/swag
+    * **Endpoint de documentação**: Um endpoint `/docs` servindo a UI do Swagger
+    * **Documentação do Health Check**: Anotações swag (comentários especiais) para o endpoint `GET /health` incluindo:
+      - Descrição do endpoint usando `@Summary`, `@Description`
+      - Resposta de sucesso (200) usando `@Success`
+      - Exemplo de resposta JSON
+    * **Configuração base**: Metadados da API (título, versão, descrição) configurados no `main.go` usando anotações swag
+    * **Geração de documentação**: Comando para gerar documentação (`swag init`)
+
+---
+
+## 6. Restrições (O que NÃO gerar)
+* **NÃO CRIAR TESTES:** Nenhum arquivo de teste (`*_test.go`) ou boilerplate de teste deve ser incluído. Focar 100% no código da aplicação.
+* **NÃO CRIAR DOCUMENTAÇÃO EXTENSA:** A única documentação a ser gerada é a do Swagger. Não crie `README.md`, `CONTRIBUTING.md`, ou comentários de função que não sejam para o Swagger.
+* **NÃO CRIAR COMENTÁRIOS NO CÓDIGO:** Não incluir comentários inline, comentários de bloco, ou qualquer tipo de comentário no código-fonte. O código deve ser autoexplicativo através de nomes de variáveis, funções e estruturas claros.
+* **NÃO CRIAR CI/CD:** Não incluir arquivos de configuração de CI/CD (`.github/workflows`, `.gitlab-ci.yml`, `.circleci/config.yml`).
+* **NÃO CRIAR CONFIGURAÇÕES DE PRODUÇÃO:** Este é um ambiente 100% de desenvolvimento. Não incluir configurações, scripts ou otimizações específicas para produção.
+* **NÃO CRIAR OBSERVABILIDADE:** Não incluir métricas, traces, ou qualquer ferramenta de observabilidade/monitoramento.
+* **NÃO INCLUIR ENV NO DOCKER-COMPOSE:** Todas as variáveis de ambiente devem estar apenas no `.env` e `.env.example`, nunca diretamente no docker-compose.yml.

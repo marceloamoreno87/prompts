@@ -1,0 +1,111 @@
+Assunto: Geração Completa de Setup de Infraestrutura com Containers
+
+## 1. Visão Geral do Projeto
+* **Nome do Projeto:** [Nome do seu projeto]
+* **Objetivo Principal:** [Descreva em uma frase o que a infraestrutura fará, ex: "Ambiente de desenvolvimento containerizado com Docker Compose"]
+
+---
+
+## 2. Stack de Tecnologia (Versões Específicas)
+* **Containerização:** Docker (última versão estável)
+* **Orquestração:** Docker Compose (última versão estável)
+* **Banco de Dados:** PostgreSQL 16
+* **Cache:** Redis 7
+* **Ambiente:** 100% Desenvolvimento (não incluir configurações de produção)
+
+---
+
+## 3. Arquitetura e Padrões
+* **Design de Infraestrutura:** Containers isolados por serviço, comunicação via networks Docker
+* **Princípios de Qualidade:** Simplicidade, facilidade de uso, hot-reload habilitado, volumes persistentes para dados, configuração via arquivos de ambiente
+* **Gerenciamento de Variáveis:** Todas as variáveis de ambiente devem estar em `.env` e `.env.example`, nunca diretamente no docker-compose.yml
+* **Volumes:** Volumes nomeados para persistência de dados (PostgreSQL, Redis)
+* **Networks:** Network Docker customizada para comunicação entre serviços
+* **Health Checks:** Health checks configurados para todos os serviços quando disponível
+
+---
+
+## 4. Ambiente e Ferramentas
+* **Orquestrador de Tarefas:** Makefile
+* **Versionamento:** Git (com `.gitignore` apropriado para Docker)
+* **Hot Reload:** Habilitado para todos os serviços de aplicação
+
+---
+
+## 5. Entregáveis Solicitados (O que você deve criar)
+
+1. **Makefile:** Um `Makefile` na raiz do projeto para automatizar tarefas comuns. Deve ser o ponto de entrada principal para o dev e incluir alvos (targets) como:
+   * `make up`: Sobe os containers do Docker Compose
+   * `make down`: Desliga os containers (opcional: `make down-v` para remover volumes)
+   * `make build`: Constrói as imagens Docker
+   * `make logs`: Mostra os logs dos containers (opcional: `make logs-f` para seguir logs)
+   * `make restart`: Reinicia os containers
+   * `make ps`: Lista containers em execução
+   * `make clean`: Remove containers, volumes e imagens não utilizados
+   * `make shell-app`: Abre shell no container da aplicação
+   * `make shell-db`: Abre shell no container do banco de dados
+
+2. **docker-compose.yml:** Um arquivo `docker-compose.yml` para o ambiente de desenvolvimento que deve incluir:
+   * **Serviços:**
+     * `app`: Serviço principal da aplicação (backend ou frontend) com:
+       - Hot-reload habilitado
+       - Volume montado para código fonte
+       - env_file apontando para `.env`
+       - Porta exposta para acesso local
+       - Dependências apropriadas (depends_on)
+     * `db`: Serviço PostgreSQL com:
+       - Volume persistente para dados
+       - env_file apontando para `.env` para configuração inicial
+       - Porta exposta para acesso local
+       - Health check configurado
+     * `cache`: Serviço Redis com:
+       - Volume persistente para dados
+       - env_file apontando para `.env`
+       - Porta exposta para acesso local
+       - Health check configurado
+   * **Networks:** Network customizada para comunicação entre serviços
+   * **Volumes:** Volumes nomeados para persistência de dados
+   * **IMPORTANTE:** NÃO incluir variáveis de ambiente diretamente no docker-compose.yml. Todas as variáveis devem estar no arquivo `.env` e referenciadas via `env_file: .env`
+
+3. **Dockerfile:** Um `Dockerfile` para ambiente de desenvolvimento que:
+   * Use imagem base apropriada (Go 1.25+ para backend, Node.js 22+ para frontend)
+   * Configure hot-reload (air para Go, Next.js Fast Refresh para frontend)
+   * Monte volumes para código fonte
+   * Instale dependências de desenvolvimento
+   * Configure working directory apropriado
+   * **Nota:** Este Dockerfile é apenas para desenvolvimento, não para produção
+
+4. **Arquivos de Configuração Iniciais:**
+   * **`.env.example`**: Arquivo de exemplo com todas as variáveis de ambiente necessárias, incluindo:
+     - Configurações do banco de dados (DB_HOST, DB_USER, DB_PASS, DB_NAME, DB_PORT)
+     - Configurações de cache (REDIS_HOST, REDIS_PORT, REDIS_PASSWORD)
+     - Configurações da aplicação (PORT, HOST, ENV=development)
+     - Configurações específicas do serviço (se aplicável)
+   * **`.dockerignore`**: Arquivo para excluir arquivos desnecessários do contexto Docker
+   * **`.gitignore`**: Arquivo apropriado incluindo `.env`, arquivos de Docker, volumes locais
+
+5. **Configuração de Hot Reload:**
+   * **Backend (Go):** Arquivo `.air.toml` configurado para hot-reload com air
+   * **Frontend (Next.js):** Configuração do Next.js para Fast Refresh habilitado
+   * **Watch:** Configurar watch de arquivos apropriado para cada serviço
+
+6. **Health Checks:**
+   * Health checks configurados para todos os serviços quando disponível
+   * Endpoints de health check expostos quando aplicável
+   * Dependências entre serviços baseadas em health checks
+
+7. **Volumes e Persistência:**
+   * Volumes nomeados para dados persistentes (PostgreSQL, Redis)
+   * Volumes para código fonte montados como bind mounts
+   * Configuração apropriada de permissões
+
+---
+
+## 6. Restrições (O que NÃO gerar)
+
+* **NÃO CRIAR CONFIGURAÇÕES DE PRODUÇÃO:** Este é um ambiente 100% de desenvolvimento. Não incluir configurações, scripts ou otimizações específicas para produção.
+* **NÃO CRIAR CI/CD:** Não incluir arquivos de configuração de CI/CD (`.github/workflows`, `.gitlab-ci.yml`, `.circleci/config.yml`).
+* **NÃO CRIAR SCRIPTS DE DEPLOY:** Não incluir scripts de deploy ou configurações de produção.
+* **NÃO INCLUIR ENV NO DOCKER-COMPOSE:** Todas as variáveis de ambiente devem estar apenas no `.env` e `.env.example`, nunca diretamente no docker-compose.yml.
+* **NÃO CRIAR ORQUESTRAÇÃO KUBERNETES:** Não incluir arquivos de configuração do Kubernetes (manifests, helm charts, etc).
+* **NÃO CRIAR MONITORAMENTO/LOGGING AVANÇADO:** Não incluir ferramentas de monitoramento, logging centralizado ou observabilidade além do básico.

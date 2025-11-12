@@ -1,0 +1,144 @@
+Assunto: Geração Completa de Setup de Frontend
+
+## 1. Visão Geral do Projeto
+* **Nome do Projeto:** [Nome do seu projeto, ex: "Dashboard de E-commerce"]
+* **Objetivo Principal:** [Descreva em uma frase o que o frontend fará, ex: "Interface para gerenciar usuários, produtos e pedidos"]
+
+---
+
+## 2. Stack de Tecnologia (Versões Específicas)
+* **Framework Principal:** Next.js 15+ (versão mínima obrigatória) com React (última versão compatível)
+* **Linguagem:** [ex: TypeScript 5.x, JavaScript ES2023]
+* **Node.js:** Node.js 22+ (versão mínima obrigatória)
+* **Gerenciador de Pacotes:** [ex: npm, yarn, pnpm]
+* **Build Tool:** Next.js (built-in com Turbopack no modo dev)
+* **Estilização:** Tailwind CSS (versão mais recente) + shadcn/ui
+* **App Router:** Usar App Router do Next.js (não Pages Router)
+* **Gerenciamento de Estado:** [ex: Zustand, Redux Toolkit, Jotai, Context API, "Nenhum por enquanto"]
+* **Roteamento:** Next.js Router (built-in com App Router)
+* **Requisições HTTP:** [ex: Fetch API nativo, React Query/TanStack Query, SWR, Apollo Client (GraphQL)]
+* **Validação de Formulários:** [ex: React Hook Form + Zod, Formik + Yup]
+* **Gerenciamento de Tema:** next-themes (recomendado) ou ThemeProvider customizado
+* **Hot Reload:** Next.js built-in hot-reload com Fast Refresh habilitado
+
+---
+
+## 3. Arquitetura e Padrões
+* **Design de Código (Arquitetura):** [ex: Arquitetura baseada em componentes, Feature-based, Atomic Design, Modular]
+* **Princípios de Qualidade:** O código deve ser simples, objetivo, **focado em performance** (ex: code splitting, lazy loading, memoização quando apropriado, otimização de re-renders), seguir a Responsabilidade Única (SRP) e ser focado em fácil manutenção
+* **Padrão de Componentes:** Componentes funcionais, composição sobre herança, componentes reutilizáveis e isolados
+* **Tema (Obrigatório):** Dark mode e Light mode sempre implementados com toggle de tema persistente (localStorage)
+* **Estrutura de Pastas por Componentes:** [ex: Por feature, Por tipo (components/app/hooks), Atomic Design (atoms/molecules/organisms)]
+* **App Router Structure:** Seguir a estrutura do Next.js App Router com `app/` directory (não `pages/`)
+* **Tratamento de Erros:** [ex: Error Boundaries (React), Error handling centralizado, mensagens de erro amigáveis ao usuário]
+* **Loading States:** [ex: Skeleton loaders, Spinners, Loading states consistentes]
+* **Validação de Dados:** [ex: Validação no cliente com biblioteca específica (Zod, Yup), validação de formulários]
+* **SEO:** Configurar metadata dinâmica, sitemap.xml, robots.txt quando aplicável
+* **Acessibilidade:** Seguir WCAG 2.1 AA, usar aria-labels apropriados, garantir navegação por teclado
+* **Otimização de Imagens:** Usar componente Image do Next.js com otimização automática
+* **Principais Páginas/Rotas:** [Liste as principais páginas da aplicação, ex: /home, /login, /dashboard, /products, /users]
+
+---
+
+## 4. Ambiente e Ferramentas (Qualidade de Código)
+* **Containerização:** Sim (Docker)
+* **Ambiente de Desenvolvimento:** Docker Compose
+* **Estilo de Código (Linter/Formatter):** [ex: ESLint + Prettier, Biome, Standard]
+* **Type Checking:** [ex: TypeScript strict mode, JSDoc com @ts-check]
+* **Orquestrador de Tarefas:** Makefile
+* **Versionamento:** Git (com `.gitignore` apropriado para o framework)
+
+---
+
+## 5. Entregáveis Solicitados (O que você deve criar)
+Por favor, gere os seguintes artefatos para este projeto:
+
+1.  **Makefile:** Um `Makefile` na raiz do projeto para automatizar tarefas comuns. Deve ser o ponto de entrada principal para o dev e incluir alvos (targets) como:
+    * `make up`: Sobe os containers do Docker Compose
+    * `make down`: Desliga os containers (opcional: `make down-v` para remover volumes)
+    * `make build`: Constrói as imagens Docker
+    * `make dev`: Inicia o servidor de desenvolvimento local (sem Docker)
+    * `make build-app`: Constrói a aplicação Next.js localmente (`next build`) - apenas para verificação, não para produção
+    * `make lint`: Roda o linter
+    * `make format`: Formata o código automaticamente
+    * `make type-check`: Verifica tipos TypeScript (se aplicável)
+    * `make clean`: Limpa arquivos temporários, node_modules e builds locais
+    * `make install`: Instala dependências
+2.  **Estrutura de Pastas:** Um diagrama em árvore (tree structure) da organização do projeto, seguindo o padrão de arquitetura definido.
+3.  **Dockerfile:** Um `Dockerfile` para ambiente de desenvolvimento que:
+    * **Build:** Compilação eficiente com cache de dependências
+    * **Runtime:** Imagem com Node.js 22+ e todas as dependências necessárias para desenvolvimento
+    * **Hot Reload:** Configurado para suportar hot-reload do Next.js com volumes montados
+    * **Nota:** Este Dockerfile é apenas para desenvolvimento, não para produção
+4.  **docker-compose.yml:** Um arquivo `docker-compose.yml` para o ambiente de desenvolvimento, que será orquestrado pelo `Makefile`. Deve incluir os serviços:
+    * `app`: O serviço principal do frontend com hot-reload (Next.js Fast Refresh), volume montado para código fonte, env_file apontando para `.env`, e porta exposta para acesso local
+    * **IMPORTANTE:** NÃO incluir variáveis de ambiente diretamente no docker-compose.yml. Todas as variáveis devem estar no arquivo `.env` e referenciadas via `env_file: .env`
+    * **Nota:** Configure networks apropriadas e health checks quando disponível
+5.  **Arquivos de Configuração Iniciais:**
+    * **`.env.example`**: Arquivo de exemplo com todas as variáveis de ambiente necessárias, incluindo:
+      - Configurações da API (API_URL, API_BASE_URL, API_TIMEOUT)
+      - Configurações do ambiente (NODE_ENV=development, NEXT_PUBLIC_API_URL)
+      - Configurações de autenticação (JWT_STORAGE_KEY, AUTH_TOKEN_KEY - se aplicável)
+      - Configurações de features (ENABLE_ANALYTICS=false, ENABLE_DEBUG=false)
+    * **Arquivo de configuração do Tailwind CSS**: `tailwind.config.js` ou `tailwind.config.ts` com:
+      - Configuração de tema customizado (cores, fontes, espaçamentos)
+      - Configuração de dark mode (class ou media)
+      - Content paths configurados corretamente
+      - Plugins necessários (se aplicável)
+    * **Arquivo de configuração do shadcn/ui**: `components.json` com configuração inicial do shadcn/ui
+    * **Arquivo de configuração do linter**: [ex: `.eslintrc.json` + `.prettierrc`, `.eslintrc.js` + `.prettier.config.js`]
+    * **Arquivo de gerenciamento de dependências**: `package.json` com scripts básicos e dependências principais
+    * **`.gitignore`**: Arquivo apropriado para o framework, incluindo arquivos de build, `.env`, `node_modules`, arquivos de IDE, logs e arquivos temporários
+    * **Arquivo de configuração TypeScript**: `tsconfig.json` (se usar TypeScript) com configurações apropriadas para Next.js
+    * **Arquivo de configuração do Next.js**: `next.config.js` ou `next.config.ts` com configurações básicas
+6.  **Configuração de Tema (Dark/Light Mode):**
+    * **Provider de Tema**: Componente/provider para gerenciar tema (ex: `ThemeProvider`, `ThemeContext`)
+    * **Hook de Tema**: Hook customizado para acessar e alterar tema (ex: `useTheme`, `useDarkMode`)
+    * **Toggle de Tema**: Componente de toggle para alternar entre dark e light mode
+    * **Persistência**: Persistência da preferência de tema no localStorage
+    * **Configuração Tailwind**: Configuração do Tailwind para suportar dark mode via classe
+    * **Variáveis CSS**: Variáveis CSS para cores do tema (se necessário)
+7.  **Componentes Base (shadcn/ui):**
+    * **Instalação inicial**: Configuração do shadcn/ui com componentes básicos instalados
+    * **Componentes essenciais**: Instalar e configurar componentes básicos como Button, Card, Input (conforme necessário)
+    * **Estrutura de componentes**: Pasta `components/ui` com componentes do shadcn/ui
+    * **Customização**: Customização básica dos componentes para seguir o design system do projeto
+8.  **Código "Hello World" (Ponto de Partida):**
+    * **Layout Root (`app/layout.tsx`)**: Layout raiz do Next.js App Router que:
+      - Configure providers globais (ThemeProvider do next-themes, StateProvider se aplicável)
+      - Configure estilos globais (Tailwind imports, CSS reset)
+      - Defina metadata básica (title, description)
+      - Configure estrutura HTML base
+    * **Layout Base (`app/layout.tsx` ou componente customizado)**: Componente de layout base com:
+      - Header com toggle de tema
+      - Estrutura básica de navegação (se aplicável)
+      - Footer (opcional)
+      - Suporte a dark/light mode
+    * **Página Home (`app/page.tsx`)**: Página inicial com:
+      - Exemplo de uso de componentes shadcn/ui
+      - Demonstração de dark/light mode funcionando
+      - Estrutura básica de conteúdo
+    * **Configuração de Rotas**: Usar App Router do Next.js com pelo menos a rota `/` (home via `app/page.tsx`)
+    * **Módulo de configuração**: Exemplo de como carregar e validar variáveis de ambiente (usar `NEXT_PUBLIC_*` para variáveis públicas)
+    * **Estrutura básica de componentes**: Organização inicial seguindo a arquitetura definida na seção 3 e estrutura do App Router
+9.  **Estilos e Design System:**
+    * **CSS Global**: Arquivo de estilos globais (`app/globals.css`) com:
+      - Importações do Tailwind CSS
+      - Reset CSS básico (se necessário)
+      - Variáveis CSS para tema (cores, espaçamentos)
+      - Estilos base para dark/light mode
+    * **Configuração de Cores**: Paleta de cores definida no Tailwind config com suporte a dark mode
+    * **Tipografia**: Configuração de fontes no Tailwind config
+    * **Espaçamentos**: Sistema de espaçamento consistente configurado
+
+---
+
+## 6. Restrições (O que NÃO gerar)
+* **NÃO CRIAR TESTES:** Nenhum arquivo de teste (ex: `*.test.tsx`, `*.spec.tsx`, `*.test.js`, `*.spec.js`) ou boilerplate de teste deve ser incluído. Focar 100% no código da aplicação.
+* **NÃO CRIAR DOCUMENTAÇÃO EXTENSA:** Não crie `README.md`, `CONTRIBUTING.md`, ou comentários de função extensos. Documentação mínima apenas quando absolutamente necessário.
+* **NÃO CRIAR COMENTÁRIOS NO CÓDIGO:** Não incluir comentários inline, comentários de bloco, ou qualquer tipo de comentário no código-fonte. O código deve ser autoexplicativo através de nomes de variáveis, funções e componentes claros.
+* **NÃO CRIAR CI/CD:** Não incluir arquivos de configuração de CI/CD (ex: `.github/workflows`, `.gitlab-ci.yml`, `.circleci/config.yml`).
+* **NÃO CRIAR CONFIGURAÇÕES DE PRODUÇÃO:** Este é um ambiente 100% de desenvolvimento. Não incluir configurações, scripts ou otimizações específicas para produção.
+* **NÃO CRIAR STORYBOOK:** Não incluir configuração ou componentes do Storybook.
+* **NÃO INCLUIR ENV NO DOCKER-COMPOSE:** Todas as variáveis de ambiente devem estar apenas no `.env` e `.env.example`, nunca diretamente no docker-compose.yml.
+
