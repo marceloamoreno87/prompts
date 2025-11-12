@@ -87,3 +87,5 @@ Assunto: Regras Gerais Compartilhadas entre Backend e Frontend
 * **Mensagens:** Mensagens de erro claras e úteis para desenvolvimento
 * **Códigos HTTP:** Usar códigos HTTP apropriados e consistentes
 * **Error Wrapping:** Usar error wrapping quando disponível (Go: fmt.Errorf, errors.Is/As)
+* **Frontend - Erros da API:** Usar padrão consistente para exibição de erros da API, com mensagens amigáveis ao usuário
+* **Frontend - Loading States:** Implementar loading states inteligentes (skeleton loaders, spinners contextuais) para melhorar UX durante requisições

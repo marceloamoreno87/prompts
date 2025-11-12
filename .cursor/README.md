@@ -32,12 +32,18 @@ Template completo para gerar setup de backend em Go:
 
 ### Frontend (`rules/frontend.mdc`)
 Template completo para gerar setup de frontend em Next.js:
-- Next.js 15+
+- Next.js 16.0.1 com App Router
+- TypeScript como linguagem principal
 - Node.js 22+
 - Tailwind CSS + shadcn/ui
+- Zustand para gerenciamento de estado
+- Axios para requisições HTTP
+- React Hook Form + Zod para validação
+- next-themes para dark/light mode
+- Paleta de cores específica (Light/Dark mode)
 - Hot reload com Fast Refresh
-- Dark/Light mode obrigatório
-- App Router
+- Loading states inteligentes (skeleton, spinners)
+- Tratamento de erros da API padronizado
 
 ### Infraestrutura (`rules/infra.mdc`)
 Template para infraestrutura com containers:
@@ -53,6 +59,8 @@ Regras compartilhadas entre backend e frontend:
 - Versionamento Git
 - Qualidade de código
 - Segurança básica
+- Tratamento de erros (incluindo erros da API no frontend)
+- Loading states para melhorar UX
 
 ## Comandos (Commands)
 
@@ -103,7 +111,7 @@ Otimiza código para performance:
 
 - **Go:** 1.25+
 - **Node.js:** 22+
-- **Next.js:** 15+
+- **Next.js:** 16.0.1
 - **PostgreSQL:** 16
 - **Redis:** 7
 
@@ -112,4 +120,5 @@ Otimiza código para performance:
 Para usar as regras, referencie o arquivo `.mdc` apropriado no contexto do Cursor.
 
 Para usar os comandos, referencie o arquivo `.md` apropriado e siga as instruções.
+
 

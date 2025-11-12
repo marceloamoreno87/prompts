@@ -7,18 +7,18 @@ Assunto: Geração Completa de Setup de Frontend
 ---
 
 ## 2. Stack de Tecnologia (Versões Específicas)
-* **Framework Principal:** Next.js 15+ (versão mínima obrigatória) com React (última versão compatível)
-* **Linguagem:** [ex: TypeScript 5.x, JavaScript ES2023]
+* **Framework Principal:** Next.js 16.0.1 com App Router (https://nextjs.org/docs)
+* **Linguagem:** TypeScript (linguagem principal)
 * **Node.js:** Node.js 22+ (versão mínima obrigatória)
 * **Gerenciador de Pacotes:** [ex: npm, yarn, pnpm]
 * **Build Tool:** Next.js (built-in com Turbopack no modo dev)
-* **Estilização:** Tailwind CSS (versão mais recente) + shadcn/ui
+* **Estilização:** Tailwind CSS (versão mais recente) + shadcn/ui (https://ui.shadcn.com/)
 * **App Router:** Usar App Router do Next.js (não Pages Router)
-* **Gerenciamento de Estado:** [ex: Zustand, Redux Toolkit, Jotai, Context API, "Nenhum por enquanto"]
+* **Gerenciamento de Estado:** Zustand (https://zustand.docs.pmnd.rs/getting-started/introduction)
 * **Roteamento:** Next.js Router (built-in com App Router)
-* **Requisições HTTP:** [ex: Fetch API nativo, React Query/TanStack Query, SWR, Apollo Client (GraphQL)]
-* **Validação de Formulários:** [ex: React Hook Form + Zod, Formik + Yup]
-* **Gerenciamento de Tema:** next-themes (recomendado) ou ThemeProvider customizado
+* **Requisições HTTP:** Axios (cliente HTTP para requisições à API)
+* **Validação de Formulários:** React Hook Form (https://react-hook-form.com/) + Zod (https://zod.dev/)
+* **Gerenciamento de Tema:** next-themes (gerenciamento de temas dark/light mode)
 * **Hot Reload:** Next.js built-in hot-reload com Fast Refresh habilitado
 
 ---
@@ -30,13 +30,56 @@ Assunto: Geração Completa de Setup de Frontend
 * **Tema (Obrigatório):** Dark mode e Light mode sempre implementados com toggle de tema persistente (localStorage)
 * **Estrutura de Pastas por Componentes:** [ex: Por feature, Por tipo (components/app/hooks), Atomic Design (atoms/molecules/organisms)]
 * **App Router Structure:** Seguir a estrutura do Next.js App Router com `app/` directory (não `pages/`)
-* **Tratamento de Erros:** [ex: Error Boundaries (React), Error handling centralizado, mensagens de erro amigáveis ao usuário]
-* **Loading States:** [ex: Skeleton loaders, Spinners, Loading states consistentes]
-* **Validação de Dados:** [ex: Validação no cliente com biblioteca específica (Zod, Yup), validação de formulários]
+* **Tratamento de Erros:** Padrão consistente para exibição de erros da API, Error Boundaries (React), Error handling centralizado, mensagens de erro amigáveis ao usuário
+* **Loading States:** Implementar loading states inteligentes (skeleton loaders, spinners contextuais)
+* **Validação de Dados:** Utilizar Zod para validação de schemas e React Hook Form para formulários
 * **SEO:** Configurar metadata dinâmica, sitemap.xml, robots.txt quando aplicável
 * **Acessibilidade:** Seguir WCAG 2.1 AA, usar aria-labels apropriados, garantir navegação por teclado
 * **Otimização de Imagens:** Usar componente Image do Next.js com otimização automática
 * **Principais Páginas/Rotas:** [Liste as principais páginas da aplicação, ex: /home, /login, /dashboard, /products, /users]
+
+---
+
+## 3.1. Backend API
+* **Base URL:** `http://localhost:8080`
+* **Versão:** 1.0
+* **Autenticação:** JWT Bearer Token
+* **Swagger:** Documentação completa em `swagger.json`
+* **Endpoints principais:**
+  - Autenticação: `/api/v1/auth/login`, `/api/v1/auth/refresh`, `/api/v1/auth/register` (admin e user)
+  - Chips: `/api/v1/chips` (CRUD completo)
+  - Usuários: `/api/v1/users` (apenas admin)
+  - Perfil: `/api/v1/profile`
+  - Admin: `/api/v1/admin/stats`
+
+---
+
+## 3.2. Paleta de Cores
+
+### Light Mode
+* **Background Principal:** `#F8F8F8` (off-white/beige claro)
+* **Background Secundário:** `#FFFFFF` (branco para cards)
+* **Texto Principal:** `#1A1A1A` (preto escuro)
+* **Texto Secundário:** `#666666` (cinza médio)
+* **Acento Principal:** `#E62E2E` (vermelho vibrante)
+* **Acento Secundário:** `#FF5733` (laranja/vermelho para gradientes)
+* **Borders:** `#E0E0E0` (cinza claro)
+
+### Dark Mode
+* **Preto Técnico (Base Principal):** `#121212`
+* **Cinza Vulcânico (Fundo Secundário):** `#1A1A1A` ou `#333333`
+* **Âmbar (Destaque Principal):** `#FFBF00`
+* **Vermelho Fogo (Destaque Secundário / Ação):** `#E62E2E`
+* **Branco Neve (Texto):** `#F5F5F5`
+* **Texto Secundário:** `#A0A0A0` (cinza médio)
+* **Borders:** `#404040` (cinza escuro)
+
+---
+
+## 3.3. Sistema de Theme
+* **Provider:** `providers/ThemeProvider.tsx`
+* **Toggle:** `components/shared/ThemeToggle.tsx`
+* **Variáveis CSS:** Definidas em `app/globals.css` usando `:root` (light) e `.dark` (dark)
 
 ---
 
@@ -76,10 +119,9 @@ Por favor, gere os seguintes artefatos para este projeto:
     * **Nota:** Configure networks apropriadas e health checks quando disponível
 5.  **Arquivos de Configuração Iniciais:**
     * **`.env.example`**: Arquivo de exemplo com todas as variáveis de ambiente necessárias, incluindo:
-      - Configurações da API (API_URL, API_BASE_URL, API_TIMEOUT)
-      - Configurações do ambiente (NODE_ENV=development, NEXT_PUBLIC_API_URL)
-      - Configurações de autenticação (JWT_STORAGE_KEY, AUTH_TOKEN_KEY - se aplicável)
-      - Configurações de features (ENABLE_ANALYTICS=false, ENABLE_DEBUG=false)
+      - Configurações da API (`NEXT_PUBLIC_API_URL` para a URL base da API)
+      - Configurações do ambiente (NODE_ENV=development)
+      - Criar arquivo `.env.local` para configurações locais
     * **Arquivo de configuração do Tailwind CSS**: `tailwind.config.js` ou `tailwind.config.ts` com:
       - Configuração de tema customizado (cores, fontes, espaçamentos)
       - Configuração de dark mode (class ou media)
@@ -92,12 +134,12 @@ Por favor, gere os seguintes artefatos para este projeto:
     * **Arquivo de configuração TypeScript**: `tsconfig.json` (se usar TypeScript) com configurações apropriadas para Next.js
     * **Arquivo de configuração do Next.js**: `next.config.js` ou `next.config.ts` com configurações básicas
 6.  **Configuração de Tema (Dark/Light Mode):**
-    * **Provider de Tema**: Componente/provider para gerenciar tema (ex: `ThemeProvider`, `ThemeContext`)
-    * **Hook de Tema**: Hook customizado para acessar e alterar tema (ex: `useTheme`, `useDarkMode`)
-    * **Toggle de Tema**: Componente de toggle para alternar entre dark e light mode
-    * **Persistência**: Persistência da preferência de tema no localStorage
+    * **Provider de Tema**: Componente `providers/ThemeProvider.tsx` usando next-themes
+    * **Toggle de Tema**: Componente `components/shared/ThemeToggle.tsx` para alternar entre dark e light mode
+    * **Persistência**: Persistência da preferência de tema no localStorage (gerenciado pelo next-themes)
     * **Configuração Tailwind**: Configuração do Tailwind para suportar dark mode via classe
-    * **Variáveis CSS**: Variáveis CSS para cores do tema (se necessário)
+    * **Variáveis CSS**: Variáveis CSS para cores do tema definidas em `app/globals.css` usando `:root` (light) e `.dark` (dark)
+    * **Paleta de Cores**: Implementar paleta completa conforme seção 3.2 (Light Mode e Dark Mode)
 7.  **Componentes Base (shadcn/ui):**
     * **Instalação inicial**: Configuração do shadcn/ui com componentes básicos instalados
     * **Componentes essenciais**: Instalar e configurar componentes básicos como Button, Card, Input (conforme necessário)
@@ -125,9 +167,10 @@ Por favor, gere os seguintes artefatos para este projeto:
     * **CSS Global**: Arquivo de estilos globais (`app/globals.css`) com:
       - Importações do Tailwind CSS
       - Reset CSS básico (se necessário)
-      - Variáveis CSS para tema (cores, espaçamentos)
+      - Variáveis CSS para tema (cores, espaçamentos) usando `:root` (light) e `.dark` (dark)
       - Estilos base para dark/light mode
-    * **Configuração de Cores**: Paleta de cores definida no Tailwind config com suporte a dark mode
+      - Implementação completa da paleta de cores conforme seção 3.2
+    * **Configuração de Cores**: Paleta de cores definida no Tailwind config com suporte a dark mode, seguindo a paleta específica da seção 3.2
     * **Tipografia**: Configuração de fontes no Tailwind config
     * **Espaçamentos**: Sistema de espaçamento consistente configurado
 
@@ -137,6 +180,7 @@ Por favor, gere os seguintes artefatos para este projeto:
 * **NÃO CRIAR TESTES:** Nenhum arquivo de teste (ex: `*.test.tsx`, `*.spec.tsx`, `*.test.js`, `*.spec.js`) ou boilerplate de teste deve ser incluído. Focar 100% no código da aplicação.
 * **NÃO CRIAR DOCUMENTAÇÃO EXTENSA:** Não crie `README.md`, `CONTRIBUTING.md`, ou comentários de função extensos. Documentação mínima apenas quando absolutamente necessário.
 * **NÃO CRIAR COMENTÁRIOS NO CÓDIGO:** Não incluir comentários inline, comentários de bloco, ou qualquer tipo de comentário no código-fonte. O código deve ser autoexplicativo através de nomes de variáveis, funções e componentes claros.
+* **Foco:** Simplicidade e manutenibilidade
 * **NÃO CRIAR CI/CD:** Não incluir arquivos de configuração de CI/CD (ex: `.github/workflows`, `.gitlab-ci.yml`, `.circleci/config.yml`).
 * **NÃO CRIAR CONFIGURAÇÕES DE PRODUÇÃO:** Este é um ambiente 100% de desenvolvimento. Não incluir configurações, scripts ou otimizações específicas para produção.
 * **NÃO CRIAR STORYBOOK:** Não incluir configuração ou componentes do Storybook.

@@ -126,3 +126,4 @@ Quando solicitado a otimizar código, você deve:
 
 **Agora, quando o usuário solicitar otimização, siga este processo completo.**
 
+
