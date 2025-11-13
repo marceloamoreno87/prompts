@@ -16,10 +16,13 @@ Assunto: Geração Completa de Setup de Backend
 * **Gerenciador de Dependências:** Go Modules (go.mod)
 * **Ferramenta de Migrations:** go-migrate (golang-migrate/migrate)
 * **Documentação de API:** Swagger 2.0/OpenAPI 3.0 via swaggo/swag
-* **Hot Reload:** air (github.com/air-verse/air) para desenvolvimento com hot-reload automático
-  * Instalação: `go install github.com/air-verse/air@latest` (requer Go 1.25+)
-  * Configuração: Arquivo `.air.toml` na raiz do projeto (gerado com `air init`)
-  * Uso: Executar `air` ou `air -c .air.toml` para iniciar hot-reload
+* **Hot Reload:** air para desenvolvimento com hot-reload automático
+  * **Biblioteca OBRIGATÓRIA:** `github.com/air-verse/air@latest` (NÃO usar outras versões ou forks)
+  * **Instalação:** `go install github.com/air-verse/air@latest` (requer Go 1.25+)
+  * **Verificação:** Após instalação, verificar com `air -v` ou `which air`
+  * **Configuração:** Arquivo `.air.toml` na raiz do projeto (gerado com `air init`)
+  * **Uso:** Executar `air` ou `air -c .air.toml` para iniciar hot-reload
+  * **Dockerfile:** No Dockerfile de desenvolvimento, instalar com `RUN go install github.com/air-verse/air@latest`
 
 ---
 
@@ -54,24 +57,30 @@ Por favor, gere os seguintes artefatos para este projeto:
     * `make down`: Desliga os containers (opcional: `make down-v` para remover volumes)
     * `make build`: Constrói as imagens Docker
     * `make logs`: Mostra os logs dos containers (opcional: `make logs-f` para seguir logs)
-    * `make migrate`: Roda as migrações do banco de dados usando go-migrate
-    * `make migrate-down`: Reverte a última migração usando go-migrate
+    * `make deps`: Baixa as dependências do Go (`go mod download` ou `go mod tidy`) - executar dentro do container `app` ou localmente
+    * `make migrate`: Roda as migrações do banco de dados usando go-migrate - DEVE executar `docker-compose exec app migrate -path db/migrations -database "postgres://${DB_USER}:${DB_PASS}@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=${DB_SSL_MODE}" up` garantindo que o binário `migrate` esteja no PATH do container
+    * `make migrate-down`: Reverte a última migração usando go-migrate (similar ao migrate mas com `down`)
     * `make seed`: Roda os seeds do banco de dados
     * `make lint`: Roda o golangci-lint
     * `make format`: Formata o código automaticamente usando gofmt
-    * `make docs`: Gera/atualiza os arquivos do Swagger (`swag init`)
+    * `make docs`: Gera/atualiza os arquivos do Swagger (`swag init`) - DEVE ser executado ANTES da primeira compilação, pode executar dentro do container `app` ou localmente
     * `make run`: Executa a aplicação localmente (sem Docker)
     * `make build-binary`: Compila o binário da aplicação
     * `make clean`: Limpa arquivos temporários e builds locais
 2.  **Estrutura de Pastas:** Um diagrama em árvore (tree structure) da organização do projeto, seguindo o padrão de arquitetura definido.
 3.  **Dockerfile:** Um `Dockerfile` para ambiente de desenvolvimento que:
     * Use imagem base Go 1.25+
-    * Instale air para hot-reload
+    * **Configure GOPATH e PATH:** `ENV GOPATH=/go` e `ENV PATH="${PATH}:${GOPATH}/bin"` para que binários instalados via `go install` sejam encontrados
+    * **Instale air OBRIGATORIAMENTE com:** `RUN go install github.com/air-verse/air@latest`
+    * **Instale go-migrate OBRIGATORIAMENTE com:** `RUN go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest`
+    * **Instale swag OBRIGATORIAMENTE com:** `RUN go install github.com/swaggo/swag/cmd/swag@latest`
+    * **Otimização de cache de dependências:** Copiar `go.mod` e `go.sum` primeiro e executar `RUN go mod download` para cache de dependências antes de copiar o código fonte
     * Configure working directory apropriado
     * Monte volumes para código fonte
-    * Configure hot-reload com air
+    * Configure hot-reload com air (comando `air` ou `air -c .air.toml`)
     * **Nota:** Este Dockerfile é apenas para desenvolvimento, não para produção
 4.  **docker-compose.yml:** Um arquivo `docker-compose.yml` para o ambiente de desenvolvimento, que será orquestrado pelo `Makefile`. Deve incluir os serviços:
+    * **IMPORTANTE:** NÃO incluir o atributo `version:` no início do arquivo (está obsoleto nas versões recentes do Docker Compose e gera warnings)
     * `app`: O serviço principal do backend Go com hot-reload usando air, volume montado para código fonte, env_file apontando para `.env`, e porta exposta para acesso local
     * `db`: O serviço PostgreSQL com volume persistente para dados, env_file apontando para `.env` para configuração inicial, e porta exposta para acesso local
     * `cache`: O serviço Redis com volume persistente, env_file apontando para `.env`, e porta exposta para acesso local
@@ -84,8 +93,9 @@ Por favor, gere os seguintes artefatos para este projeto:
       - Configurações do servidor (PORT, HOST, ENV=development)
       - Configurações de cache (REDIS_HOST, REDIS_PORT, REDIS_PASSWORD)
     * **Arquivo de configuração do linter**: `.golangci.yml` com configurações apropriadas para o projeto
-    * **Arquivo de gerenciamento de dependências**: `go.mod` inicializado com versão mínima do Go 1.25
-    * **Arquivo de configuração do air**: `.air.toml` configurado para hot-reload com watch de arquivos Go, exclusão de diretórios desnecessários, e configuração de build
+    * **Arquivo de gerenciamento de dependências**: `go.mod` inicializado com `go mod init [nome-do-modulo]` e versão mínima do Go 1.25, contendo TODAS as dependências necessárias (gin, pgx, redis, zap, swaggo, godotenv, etc)
+    * **Arquivo `go.sum`**: Deve ser gerado após adicionar dependências ao `go.mod` (via `go mod tidy` ou `go mod download`)
+    * **Arquivo de configuração do air**: `.air.toml` configurado para hot-reload com watch de arquivos Go, exclusão de diretórios desnecessários, e configuração de build. O build deve executar `swag init` antes de compilar se necessário, ou garantir que `docs` já exista
     * **`.gitignore`**: Arquivo apropriado para Go, incluindo arquivos de build (`bin/`, executáveis), `.env`, arquivos de IDE, logs e arquivos temporários
 6.  **Banco de Dados (Estrutura Inicial):**
     * **Migrations**: Uma pasta de `/db/migrations` contendo:
@@ -105,6 +115,7 @@ Por favor, gere os seguintes artefatos para este projeto:
       - Configure middleware básico (logging estruturado com zap, CORS, recovery/error handling)
       - Inicialize rotas
       - Implemente graceful shutdown
+      - **IMPORTANTE:** A importação do pacote `docs` do Swagger deve ser feita de forma que não quebre a compilação se o pacote ainda não existir. Opções: usar build tags, gerar `docs` antes de compilar, ou usar importação condicional. O ideal é garantir que `swag init` seja executado antes da primeira compilação
     * **Módulo de Health Check**: Um endpoint `GET /health` que retorne:
       - Status da aplicação: `{"status": "ok"}`
       - Status do banco de dados e cache: `{"status": "ok", "database": "connected", "cache": "connected"}`
@@ -120,11 +131,55 @@ Por favor, gere os seguintes artefatos para este projeto:
       - Resposta de sucesso (200) usando `@Success`
       - Exemplo de resposta JSON
     * **Configuração base**: Metadados da API (título, versão, descrição) configurados no `main.go` usando anotações swag
-    * **Geração de documentação**: Comando para gerar documentação (`swag init`)
+    * **Geração de documentação**: Comando para gerar documentação (`swag init`) - DEVE ser executado ANTES da primeira compilação. O Makefile deve ter um target `docs` e o Dockerfile ou `.air.toml` deve garantir que `swag init` seja executado antes do air tentar compilar
 
 ---
 
-## 6. Restrições (O que NÃO gerar)
+## 6. Ordem de Execução e Setup Inicial (CRÍTICO)
+
+Ao gerar o projeto completo, garantir que a seguinte ordem seja seguida:
+
+1. **Arquivos base criados primeiro:**
+   * `go.mod` inicializado com `go mod init [nome-do-modulo]` (ex: `go mod init github.com/usuario/projeto`)
+   * Todas as dependências adicionadas ao `go.mod` explicitamente ou via `go mod tidy`
+   * `go.sum` gerado após adicionar dependências (via `go mod tidy` ou `go mod download`)
+
+2. **Dependências instaladas:**
+   * Executar `go mod tidy` para baixar todas as dependências do `go.mod` e atualizar `go.sum`
+   * Garantir que todas as dependências estejam listadas no `go.mod` antes de compilar
+   * No Dockerfile, copiar `go.mod` e `go.sum` primeiro e executar `RUN go mod download` para cache
+
+3. **Swagger gerado antes da compilação:**
+   * Executar `swag init` para gerar o pacote `docs` ANTES de tentar compilar o código
+   * O Dockerfile ou Makefile deve garantir que `swag init` seja executado antes do air tentar compilar
+   * Alternativamente, o `.air.toml` pode ter um comando de pré-build que execute `swag init`
+
+4. **Dockerfile com todas as ferramentas instaladas:**
+   * Instalar air: `RUN go install github.com/air-verse/air@latest`
+   * Instalar go-migrate: `RUN go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest`
+   * Instalar swag: `RUN go install github.com/swaggo/swag/cmd/swag@latest`
+   * Configurar PATH: `ENV PATH="${PATH}:${GOPATH}/bin"` para que os binários sejam encontrados
+   * Baixar dependências: Copiar `go.mod`/`go.sum` primeiro e executar `RUN go mod download` para cache
+
+5. **docker-compose.yml sem atributo version:**
+   * NÃO incluir `version:` no início do arquivo (obsoleto nas versões recentes do Docker Compose)
+
+6. **Makefile com comandos corretos:**
+   * `make migrate` deve usar `docker-compose exec app migrate ...` garantindo que o PATH está configurado corretamente no container
+   * `make docs` deve executar `swag init` dentro do container (`docker-compose exec app swag init`) ou localmente antes de compilar
+   * `make deps` deve executar `go mod download` ou `go mod tidy` para garantir dependências atualizadas
+
+7. **Ordem recomendada de execução após setup inicial:**
+   * `make build` - Constrói as imagens Docker
+   * `make up` - Sobe os containers
+   * `make docs` - Gera documentação Swagger (se ainda não gerada)
+   * `make deps` - Garante dependências baixadas (se necessário)
+   * `make migrate` - Roda migrações do banco
+   * A aplicação deve compilar e rodar corretamente
+
+---
+
+## 7. Restrições (O que NÃO gerar)
 * **NÃO CRIAR TESTES:** Nenhum arquivo de teste (`*_test.go`) ou boilerplate de teste deve ser incluído. Focar 100% no código da aplicação.
 * **NÃO CRIAR DOCUMENTAÇÃO EXTENSA:** A única documentação a ser gerada é a do Swagger. Não crie `README.md`, `CONTRIBUTING.md`, ou comentários de função que não sejam para o Swagger.
 * **NÃO CRIAR COMENTÁRIOS NO CÓDIGO:** Não incluir comentários inline, comentários de bloco, ou qualquer tipo de comentário no código-fonte. O código deve ser autoexplicativo através de nomes de variáveis, funções e estruturas claros.

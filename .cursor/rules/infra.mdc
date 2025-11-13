@@ -46,6 +46,7 @@ Assunto: Geração Completa de Setup de Infraestrutura com Containers
    * `make shell-db`: Abre shell no container do banco de dados
 
 2. **docker-compose.yml:** Um arquivo `docker-compose.yml` para o ambiente de desenvolvimento que deve incluir:
+   * **IMPORTANTE:** NÃO incluir o atributo `version:` no início do arquivo (está obsoleto nas versões recentes do Docker Compose e gera warnings)
    * **Serviços:**
      * `app`: Serviço principal da aplicação (backend ou frontend) com:
        - Hot-reload habilitado
@@ -69,7 +70,13 @@ Assunto: Geração Completa de Setup de Infraestrutura com Containers
 
 3. **Dockerfile:** Um `Dockerfile` para ambiente de desenvolvimento que:
    * Use imagem base apropriada (Go 1.25+ para backend, Node.js 22+ para frontend)
-   * Configure hot-reload (air para Go, Next.js Fast Refresh para frontend)
+   * **Para Go (Backend):**
+     * Configure GOPATH e PATH: `ENV GOPATH=/go` e `ENV PATH="${PATH}:${GOPATH}/bin"` para que binários instalados via `go install` sejam encontrados
+     * Instalar air OBRIGATORIAMENTE com `RUN go install github.com/air-verse/air@latest` (NÃO usar outras versões ou forks)
+     * Instalar go-migrate OBRIGATORIAMENTE com `RUN go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest`
+     * Instalar swag OBRIGATORIAMENTE com `RUN go install github.com/swaggo/swag/cmd/swag@latest`
+     * Otimização de cache: Copiar `go.mod` e `go.sum` primeiro e executar `RUN go mod download` para cache de dependências antes de copiar o código fonte
+   * **Para Frontend:** Next.js Fast Refresh habilitado por padrão
    * Monte volumes para código fonte
    * Instale dependências de desenvolvimento
    * Configure working directory apropriado
@@ -86,6 +93,8 @@ Assunto: Geração Completa de Setup de Infraestrutura com Containers
 
 5. **Configuração de Hot Reload:**
    * **Backend (Go):** Arquivo `.air.toml` configurado para hot-reload com air
+     * **Biblioteca OBRIGATÓRIA:** `github.com/air-verse/air@latest` (instalar com `go install github.com/air-verse/air@latest`)
+     * **Verificação:** Após instalação, verificar com `air -v` ou `which air`
    * **Frontend (Next.js):** Configuração do Next.js para Fast Refresh habilitado
    * **Watch:** Configurar watch de arquivos apropriado para cada serviço
 
